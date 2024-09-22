@@ -80,17 +80,29 @@ class _FeedListPageState extends State<FeedListPage> {
           formattedDate = DateFormat('yyyy/MM/dd HH:mm').format(item.pubDate!);
         }
 
+        // 画像URLの取得
+        String? imageUrl;
+
+        // 'enclosure'要素から画像URLを取得
+        if (item.enclosure != null && item.enclosure!.url != null) {
+          imageUrl = item.enclosure!.url;
+        }
+        // 'media:content'から画像URLを取得（補足的）
+        else if (item.media?.contents != null &&
+            item.media!.contents!.isNotEmpty) {
+          imageUrl = item.media!.contents!.first.url;
+        }
+
         return Card(
           margin: EdgeInsets.symmetric(vertical: 8, horizontal: 16),
           child: ListTile(
-            leading:
-                item.media?.contents != null && item.media!.contents!.isNotEmpty
-                    ? Image.network(
-                        item.media!.contents!.first.url ?? '',
-                        width: 60,
-                        fit: BoxFit.cover,
-                      )
-                    : null,
+            leading: imageUrl != null
+                ? Image.network(
+                    imageUrl,
+                    width: 60,
+                    fit: BoxFit.cover,
+                  )
+                : null,
             title: Text(
               item.title ?? 'タイトルなし',
               style: TextStyle(fontWeight: FontWeight.bold),
