@@ -57,14 +57,14 @@ class MyApp extends StatelessWidget {
                       foregroundColor: Colors.white,
                       textStyle: TextStyle(fontWeight: FontWeight.w900))),
               switchTheme: SwitchThemeData(
-                thumbColor: MaterialStateProperty.resolveWith<Color>((states) {
-                  if (states.contains(MaterialState.selected)) {
+                thumbColor: WidgetStateProperty.resolveWith<Color>((states) {
+                  if (states.contains(WidgetState.selected)) {
                     return Colors.white; // 選択時のサムの色（ライトテーマ）
                   }
                   return Colors.grey; // 非選択時のサムの色
                 }),
-                trackColor: MaterialStateProperty.resolveWith<Color>((states) {
-                  if (states.contains(MaterialState.selected)) {
+                trackColor: WidgetStateProperty.resolveWith<Color>((states) {
+                  if (states.contains(WidgetState.selected)) {
                     return Colors.lime[700]!; // 選択時のトラックの色を濃いライムグリーンに設定
                   }
                   return Colors.grey.shade400; // 非選択時のトラックの色
@@ -101,14 +101,14 @@ class MyApp extends StatelessWidget {
                     textStyle: TextStyle(fontWeight: FontWeight.w900)),
               ),
               switchTheme: SwitchThemeData(
-                thumbColor: MaterialStateProperty.resolveWith<Color>((states) {
-                  if (states.contains(MaterialState.selected)) {
+                thumbColor: WidgetStateProperty.resolveWith<Color>((states) {
+                  if (states.contains(WidgetState.selected)) {
                     return Colors.black; // 選択時のサムの色（ダークテーマ）
                   }
                   return Colors.grey; // 非選択時のサムの色
                 }),
-                trackColor: MaterialStateProperty.resolveWith<Color>((states) {
-                  if (states.contains(MaterialState.selected)) {
+                trackColor: WidgetStateProperty.resolveWith<Color>((states) {
+                  if (states.contains(WidgetState.selected)) {
                     return Colors.limeAccent; // 選択時のトラックの色をライムアクセントに設定
                   }
                   return Colors.grey.shade600; // 非選択時のトラックの色
