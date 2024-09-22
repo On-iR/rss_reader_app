@@ -12,6 +12,8 @@ dependencies:
   cupertino_icons: ^1.0.8
   http: any
   webfeed_plus: any
+  intl: any
+  url_launcher: any
 
 dev_dependencies:
   flutter_test:

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:http/http.dart' as http;
 import 'package:webfeed_plus/webfeed_plus.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 void main() {
   runApp(MyApp());
@@ -63,7 +65,7 @@ class _FeedListPageState extends State<FeedListPage> {
   }
 
   Widget _buildFeedList() {
-    if (_feed == null) {
+    if (_feed == null || _feed!.items == null) {
       return Center(child: Text('フィードの読み込みに失敗しました'));
     }
 
@@ -71,12 +73,57 @@ class _FeedListPageState extends State<FeedListPage> {
       itemCount: _feed!.items!.length,
       itemBuilder: (context, index) {
         final item = _feed!.items![index];
-        return ListTile(
-          title: Text(item.title ?? 'タイトルなし'),
-          subtitle: Text(item.pubDate?.toLocal().toString() ?? '日付なし'),
-          onTap: () {
-            // 詳細ページへの遷移やリンクを開く処理をここに追加できます
-          },
+
+        // 日付のフォーマット
+        String formattedDate = '';
+        if (item.pubDate != null) {
+          formattedDate = DateFormat('yyyy/MM/dd HH:mm').format(item.pubDate!);
+        }
+
+        return Card(
+          margin: EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+          child: ListTile(
+            leading:
+                item.media?.contents != null && item.media!.contents!.isNotEmpty
+                    ? Image.network(
+                        item.media!.contents!.first.url ?? '',
+                        width: 60,
+                        fit: BoxFit.cover,
+                      )
+                    : null,
+            title: Text(
+              item.title ?? 'タイトルなし',
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
+            subtitle: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                SizedBox(height: 4),
+                Text(
+                  item.description
+                          ?.replaceAll(RegExp(r'<[^>]*>|&[^;]+;'), '') ??
+                      '',
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                SizedBox(height: 4),
+                Text(
+                  formattedDate,
+                  style: TextStyle(color: Colors.grey[600], fontSize: 12),
+                ),
+              ],
+            ),
+            onTap: () async {
+              final url = item.link;
+              if (url != null && await canLaunch(url)) {
+                await launch(url);
+              } else {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('リンクを開けませんでした')),
+                );
+              }
+            },
+          ),
         );
       },
     );
@@ -90,6 +137,9 @@ class _FeedListPageState extends State<FeedListPage> {
         ),
         body: _isLoading
             ? Center(child: CircularProgressIndicator())
-            : _buildFeedList());
+            : RefreshIndicator(
+                onRefresh: _loadFeed,
+                child: _buildFeedList(),
+              ));
   }
 }
