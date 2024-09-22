@@ -21,7 +21,7 @@ class FeedListPage extends StatelessWidget {
             children: [
               const Text('画像表示'),
               Switch(
-                value: feedProvider.items.isNotEmpty ? true : false,
+                value: feedProvider.showImages,
                 onChanged: (value) {
                   feedProvider.showImages = value;
                 },
@@ -33,10 +33,14 @@ class FeedListPage extends StatelessWidget {
       body: feedProvider.isLoading
           ? const Center(child: CircularProgressIndicator())
           : RefreshIndicator(
-              onRefresh: () => feedProvider.loadFeed(
-                  feedProvider.items.isNotEmpty
-                      ? feedProvider.items.first.link ?? ''
-                      : ''),
+              onRefresh: () {
+                if (feedProvider.feedUrl != null &&
+                    feedProvider.feedUrl!.isNotEmpty) {
+                  return feedProvider.loadFeed(feedProvider.feedUrl!);
+                } else {
+                  return Future.value();
+                }
+              },
               child: feedProvider.items.isEmpty
                   ? const Center(child: Text('フィードの読み込みに失敗しました'))
                   : ListView.builder(

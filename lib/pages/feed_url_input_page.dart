@@ -69,8 +69,6 @@ class _FeedUrlInputPageState extends State<FeedUrlInputPage> {
 
   @override
   Widget build(BuildContext context) {
-    final feedProvider = Provider.of<FeedProvider>(context);
-
     return Scaffold(
       appBar: AppBar(
         title: const Text('フィードURLを入力'),

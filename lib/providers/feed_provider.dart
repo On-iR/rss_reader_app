@@ -12,11 +12,13 @@ class FeedProvider with ChangeNotifier {
   bool _isLoading = false;
   String? _errorMessage;
   bool _showImages = true; // 画像表示状態を追加
+  String? _feedUrl; // フィードURLを追加
 
   List<FeedItem> get items => _items;
   bool get isLoading => _isLoading;
   String? get errorMessage => _errorMessage;
   bool get showImages => _showImages;
+  String? get feedUrl => _feedUrl;
 
   /// 画像表示状態を設定
   set showImages(bool value) {
@@ -24,10 +26,11 @@ class FeedProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  /// フィードを読み込み、状態を更新する
+  /// フィードURLを設定し、フィードを読み込む
   Future<void> loadFeed(String feedUrl) async {
     _isLoading = true;
     _errorMessage = null;
+    _feedUrl = feedUrl; // フィードURLを保存
     notifyListeners();
 
     try {
