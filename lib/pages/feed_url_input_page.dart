@@ -104,13 +104,10 @@ class _FeedUrlInputPageState extends State<FeedUrlInputPage> {
                     TextFormField(
                       controller: _controller,
                       decoration: InputDecoration(
-                        labelText: 'フィードURL',
-                        hintText: 'https://example.com/feed',
-                        border: const OutlineInputBorder(),
-                        filled: true,
-                        fillColor:
-                            Theme.of(context).inputDecorationTheme.fillColor,
-                      ),
+                          labelText: 'フィードURL',
+                          hintText: 'https://example.com/feed',
+                          border: const OutlineInputBorder(),
+                          hintStyle: TextStyle(color: Colors.grey.shade400)),
                       keyboardType: TextInputType.url,
                       validator: (value) {
                         if (value == null || value.trim().isEmpty) {
