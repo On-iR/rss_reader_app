@@ -15,10 +15,17 @@ class FeedUrlInputPage extends StatefulWidget {
 }
 
 class _FeedUrlInputPageState extends State<FeedUrlInputPage> {
-  final TextEditingController _controller = TextEditingController();
+  late final TextEditingController _controller;
   final _formKey = GlobalKey<FormState>();
   bool _isSubmitting = false;
   String? _errorMessage;
+
+  @override
+  void initState() {
+    super.initState();
+    // 初期値を設定
+    _controller = TextEditingController(text: 'https://zenn.dev/feed');
+  }
 
   @override
   void dispose() {
@@ -76,18 +83,14 @@ class _FeedUrlInputPageState extends State<FeedUrlInputPage> {
       appBar: AppBar(
         title: const Text('フィードURLを入力'),
         actions: [
-          Row(
-            children: [
-              const Icon(Icons.dark_mode),
-              Switch(
-                value: themeProvider.themeMode == ThemeMode.dark,
-                onChanged: (value) {
-                  themeProvider.toggleTheme(value);
-                },
-              ),
-              const SizedBox(width: 8),
-            ],
+          const Icon(Icons.dark_mode),
+          Switch(
+            value: themeProvider.themeMode == ThemeMode.dark,
+            onChanged: (value) {
+              themeProvider.toggleTheme(value);
+            },
           ),
+          const SizedBox(width: 8),
         ],
       ),
       body: Padding(

@@ -32,12 +32,34 @@ class MyApp extends StatelessWidget {
             theme: ThemeData(
               primarySwatch: Colors.blue,
               brightness: Brightness.light,
-              // 必要に応じてカスタムライトテーマを追加
+              appBarTheme: const AppBarTheme(
+                backgroundColor: Colors.blue,
+                foregroundColor: Colors.white,
+              ),
+              scaffoldBackgroundColor: Colors.white,
+              cardColor: Colors.white,
+              textTheme: const TextTheme(
+                bodyLarge: TextStyle(color: Colors.black),
+                bodyMedium: TextStyle(color: Colors.black87),
+                labelSmall: TextStyle(color: Colors.grey),
+                labelLarge: TextStyle(color: Colors.white),
+              ),
             ),
             darkTheme: ThemeData(
               primarySwatch: Colors.blue,
               brightness: Brightness.dark,
-              // 必要に応じてカスタムダークテーマを追加
+              appBarTheme: const AppBarTheme(
+                backgroundColor: Colors.black,
+                foregroundColor: Colors.white,
+              ),
+              scaffoldBackgroundColor: Colors.grey[900],
+              cardColor: Colors.grey[800],
+              textTheme: const TextTheme(
+                bodyLarge: TextStyle(color: Colors.white),
+                bodyMedium: TextStyle(color: Colors.white70),
+                labelSmall: TextStyle(color: Colors.grey),
+                labelLarge: TextStyle(color: Colors.black),
+              ),
             ),
             themeMode: themeProvider.themeMode, // 現在のテーマモードを設定
             home: const FeedUrlInputPage(),
