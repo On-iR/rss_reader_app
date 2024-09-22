@@ -4,6 +4,7 @@ import 'package:http/http.dart' as http;
 import 'package:webfeed_plus/webfeed_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'dart:convert'; // エンコーディングを扱うために追加
 
 void main() {
   runApp(MyApp());
@@ -11,7 +12,7 @@ void main() {
 
 class MyApp extends StatelessWidget {
   // 特定のフィードURLを指定してください（RSSまたはAtom）
-  final String feedUrl = 'http://dev.classmethod.jp/feed/';
+  final String feedUrl = 'https://realtime.jser.info/feed.xml';
 
   @override
   Widget build(BuildContext context) {
@@ -47,14 +48,19 @@ class _FeedListPageState extends State<FeedListPage> {
   Future<void> _loadFeed() async {
     try {
       final response = await http.get(Uri.parse(widget.feedUrl));
+
       if (response.statusCode == 200) {
+        // エンコーディングの検出とデコード
+        var encoding = detectEncoding(response.headers, response.bodyBytes);
+        String content = encoding!.decode(response.bodyBytes);
+
         var feed;
         try {
           // RSSフィードとして解析を試みる
-          feed = RssFeed.parse(response.body);
+          feed = RssFeed.parse(content);
         } catch (e) {
           // RSSでない場合、Atomフィードとして解析を試みる
-          feed = AtomFeed.parse(response.body);
+          feed = AtomFeed.parse(content);
         }
 
         List<_FeedItem> items = [];
@@ -82,6 +88,24 @@ class _FeedListPageState extends State<FeedListPage> {
     }
   }
 
+  // エンコーディングの検出
+  Encoding? detectEncoding(Map<String, String> headers, List<int> bodyBytes) {
+    // Content-Typeヘッダーからcharsetを取得
+    String? contentType = headers['content-type'];
+    if (contentType != null) {
+      final charsetMatch = RegExp(r'charset=([\w-]+)').firstMatch(contentType);
+      if (charsetMatch != null) {
+        try {
+          return Encoding.getByName(charsetMatch.group(1)!);
+        } catch (e) {
+          // 不明なエンコーディング
+        }
+      }
+    }
+    // デフォルトはUTF-8
+    return utf8;
+  }
+
   Widget _buildFeedList() {
     if (_items.isEmpty) {
       return Center(child: Text('フィードの読み込みに失敗しました'));
@@ -105,29 +129,47 @@ class _FeedListPageState extends State<FeedListPage> {
           },
           child: Card(
             margin: EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16), // カードの角丸を設定
+            ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 // 画像部分
-                Container(
-                  height: 200,
-                  width: double.infinity,
-                  child: item.imageUrl != null
-                      ? CachedNetworkImage(
-                          imageUrl: item.imageUrl!,
-                          fit: BoxFit.cover,
-                          placeholder: (context, url) =>
-                              Center(child: CircularProgressIndicator()),
-                          errorWidget: (context, url, error) => Image.asset(
-                            'assets/default_image.png',
-                            fit: BoxFit.cover,
-                          ),
-                        )
-                      : Image.asset(
+                if (item.imageUrl != null)
+                  ClipRRect(
+                    borderRadius: BorderRadius.vertical(
+                      top: Radius.circular(16), // カードの上部と同じ角丸を適用
+                    ),
+                    child: Container(
+                      height: 200,
+                      width: double.infinity,
+                      child: CachedNetworkImage(
+                        imageUrl: item.imageUrl!,
+                        fit: BoxFit.cover,
+                        placeholder: (context, url) =>
+                            Center(child: CircularProgressIndicator()),
+                        errorWidget: (context, url, error) => Image.asset(
                           'assets/default_image.png',
                           fit: BoxFit.cover,
                         ),
-                ),
+                      ),
+                    ),
+                  )
+                else
+                  ClipRRect(
+                    borderRadius: BorderRadius.vertical(
+                      top: Radius.circular(16),
+                    ),
+                    child: Container(
+                      height: 200,
+                      width: double.infinity,
+                      child: Image.asset(
+                        'assets/default_image.png',
+                        fit: BoxFit.cover,
+                      ),
+                    ),
+                  ),
                 Padding(
                   padding: const EdgeInsets.all(16.0),
                   child: Column(
@@ -209,7 +251,7 @@ class _FeedItem {
       imageUrl = item.media!.contents!.first.url;
     }
 
-    // descriptionのHTMLタグを除去
+    // descriptionのHTMLタグを除去し、文字化けを防ぐ
     String? description =
         item.description?.replaceAll(RegExp(r'<[^>]*>|&[^;]+;'), '').trim();
 
@@ -241,7 +283,7 @@ class _FeedItem {
       imageUrl = item.media!.contents!.first.url;
     }
 
-    // descriptionのHTMLタグを除去
+    // descriptionのHTMLタグを除去し、文字化けを防ぐ
     String? description =
         item.summary?.replaceAll(RegExp(r'<[^>]*>|&[^;]+;'), '').trim();
 
