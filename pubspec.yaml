@@ -1,25 +1,19 @@
-name: rss_reader_app
-description: "A new Flutter project."
+name: rss_atom_reader
+description: A Flutter RSS and Atom feed reader application.
+
 publish_to: "none"
-version: 1.0.0+1
 
 environment:
-  sdk: ^3.5.3
+  sdk: ">=2.17.0 <3.0.0"
 
 dependencies:
   flutter:
     sdk: flutter
-  cupertino_icons: ^1.0.8
   http: any
   webfeed_plus: any
   intl: any
   url_launcher: any
   cached_network_image: any
-
-dev_dependencies:
-  flutter_test:
-    sdk: flutter
-  flutter_lints: ^4.0.0
 
 flutter:
   uses-material-design: true
