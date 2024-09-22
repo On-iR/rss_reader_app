@@ -1,7 +1,6 @@
-// lib/main.dart
-
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:google_fonts/google_fonts.dart'; // Google Fontsをインポート
 import 'providers/feed_provider.dart';
 import 'providers/theme_provider.dart';
 import 'pages/feed_url_input_page.dart';
@@ -32,6 +31,20 @@ class MyApp extends StatelessWidget {
             theme: ThemeData(
               primarySwatch: Colors.lime, // 基本テーマをライムグリーンに設定
               brightness: Brightness.light,
+              textTheme: TextTheme(
+                bodyLarge: GoogleFonts.notoSans(
+                  color: Colors.black, // もともとの文字色を維持
+                ),
+                bodyMedium: GoogleFonts.notoSans(
+                  color: Colors.black87, // もともとの文字色を維持
+                ),
+                labelSmall: GoogleFonts.notoSans(
+                  color: Colors.grey, // もともとの文字色を維持
+                ),
+                labelLarge: GoogleFonts.notoSans(
+                  color: Colors.white, // もともとの文字色を維持
+                ),
+              ),
               appBarTheme: const AppBarTheme(
                 backgroundColor: Colors.lime,
                 foregroundColor: Colors.white,
@@ -43,12 +56,6 @@ class MyApp extends StatelessWidget {
                       backgroundColor: Colors.lime, // ボタンの色をライムグリーンに設定
                       foregroundColor: Colors.white,
                       textStyle: TextStyle(fontWeight: FontWeight.w900))),
-              textTheme: const TextTheme(
-                bodyLarge: TextStyle(color: Colors.black),
-                bodyMedium: TextStyle(color: Colors.black87),
-                labelSmall: TextStyle(color: Colors.grey),
-                labelLarge: TextStyle(color: Colors.white),
-              ),
               switchTheme: SwitchThemeData(
                 thumbColor: MaterialStateProperty.resolveWith<Color>((states) {
                   if (states.contains(MaterialState.selected)) {
@@ -67,6 +74,20 @@ class MyApp extends StatelessWidget {
             darkTheme: ThemeData(
               primarySwatch: Colors.lime, // ダークテーマでもライムグリーンを使用
               brightness: Brightness.dark,
+              textTheme: TextTheme(
+                bodyLarge: GoogleFonts.notoSans(
+                  color: Colors.white, // もともとの文字色を維持
+                ),
+                bodyMedium: GoogleFonts.notoSans(
+                  color: Colors.white70, // もともとの文字色を維持
+                ),
+                labelSmall: GoogleFonts.notoSans(
+                  color: Colors.grey, // もともとの文字色を維持
+                ),
+                labelLarge: GoogleFonts.notoSans(
+                  color: Colors.black, // もともとの文字色を維持
+                ),
+              ),
               appBarTheme: const AppBarTheme(
                 backgroundColor: Colors.black,
                 foregroundColor: Colors.white,
@@ -78,12 +99,6 @@ class MyApp extends StatelessWidget {
                     backgroundColor: Colors.lime, // ボタンの色をライムグリーンに設定
                     foregroundColor: Colors.white,
                     textStyle: TextStyle(fontWeight: FontWeight.w900)),
-              ),
-              textTheme: const TextTheme(
-                bodyLarge: TextStyle(color: Colors.white),
-                bodyMedium: TextStyle(color: Colors.white70),
-                labelSmall: TextStyle(color: Colors.grey),
-                labelLarge: TextStyle(color: Colors.black),
               ),
               switchTheme: SwitchThemeData(
                 thumbColor: MaterialStateProperty.resolveWith<Color>((states) {

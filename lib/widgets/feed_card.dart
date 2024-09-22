@@ -96,10 +96,10 @@ class FeedCard extends StatelessWidget {
                   Text(
                     item.title ?? 'タイトルなし',
                     style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 18,
-                      color: textColor,
-                    ),
+                        fontWeight: FontWeight.bold,
+                        fontSize: 18,
+                        color: textColor,
+                        decoration: TextDecoration.underline),
                   ),
                   const SizedBox(height: 8),
                   Text(
