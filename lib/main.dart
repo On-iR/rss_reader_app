@@ -11,7 +11,7 @@ void main() {
 
 class MyApp extends StatelessWidget {
   // 特定のフィードURLを指定してください（RSSまたはAtom）
-  final String feedUrl = 'https://aws.amazon.com/jp/blogs/aws/feed/';
+  final String feedUrl = 'http://dev.classmethod.jp/feed/';
 
   @override
   Widget build(BuildContext context) {
@@ -109,18 +109,25 @@ class _FeedListPageState extends State<FeedListPage> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 // 画像部分
-                if (item.imageUrl != null)
-                  Container(
-                    height: 200,
-                    width: double.infinity,
-                    child: CachedNetworkImage(
-                      imageUrl: item.imageUrl!,
-                      fit: BoxFit.cover,
-                      placeholder: (context, url) =>
-                          Center(child: CircularProgressIndicator()),
-                      errorWidget: (context, url, error) => Icon(Icons.error),
-                    ),
-                  ),
+                Container(
+                  height: 200,
+                  width: double.infinity,
+                  child: item.imageUrl != null
+                      ? CachedNetworkImage(
+                          imageUrl: item.imageUrl!,
+                          fit: BoxFit.cover,
+                          placeholder: (context, url) =>
+                              Center(child: CircularProgressIndicator()),
+                          errorWidget: (context, url, error) => Image.asset(
+                            'assets/default_image.png',
+                            fit: BoxFit.cover,
+                          ),
+                        )
+                      : Image.asset(
+                          'assets/default_image.png',
+                          fit: BoxFit.cover,
+                        ),
+                ),
                 Padding(
                   padding: const EdgeInsets.all(16.0),
                   child: Column(
