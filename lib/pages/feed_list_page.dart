@@ -30,20 +30,6 @@ class FeedListPage extends StatelessWidget {
               feedProvider.showImages = value;
             },
           ),
-          const SizedBox(width: 16), // スイッチ間のスペース
-
-          // ダークモード切り替え
-          const Padding(
-            padding: EdgeInsets.symmetric(horizontal: 8.0),
-            child: Icon(Icons.dark_mode),
-          ),
-          Switch(
-            value: themeProvider.themeMode == ThemeMode.dark,
-            onChanged: (value) {
-              themeProvider.toggleTheme(value);
-            },
-          ),
-          const SizedBox(width: 8),
         ],
       ),
       body: feedProvider.isLoading
