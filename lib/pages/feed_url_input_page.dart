@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/feed_provider.dart';
+import '../providers/theme_provider.dart';
 import 'feed_list_page.dart';
 
 /// フィードURLを入力する画面
@@ -69,9 +70,25 @@ class _FeedUrlInputPageState extends State<FeedUrlInputPage> {
 
   @override
   Widget build(BuildContext context) {
+    final themeProvider = Provider.of<ThemeProvider>(context);
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('フィードURLを入力'),
+        actions: [
+          Row(
+            children: [
+              const Icon(Icons.dark_mode),
+              Switch(
+                value: themeProvider.themeMode == ThemeMode.dark,
+                onChanged: (value) {
+                  themeProvider.toggleTheme(value);
+                },
+              ),
+              const SizedBox(width: 8),
+            ],
+          ),
+        ],
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -83,10 +100,13 @@ class _FeedUrlInputPageState extends State<FeedUrlInputPage> {
                   children: [
                     TextFormField(
                       controller: _controller,
-                      decoration: const InputDecoration(
+                      decoration: InputDecoration(
                         labelText: 'フィードURL',
                         hintText: 'https://example.com/feed',
-                        border: OutlineInputBorder(),
+                        border: const OutlineInputBorder(),
+                        filled: true,
+                        fillColor:
+                            Theme.of(context).inputDecorationTheme.fillColor,
                       ),
                       keyboardType: TextInputType.url,
                       validator: (value) {

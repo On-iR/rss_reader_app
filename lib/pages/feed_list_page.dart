@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/feed_provider.dart';
+import '../providers/theme_provider.dart';
 import '../widgets/feed_card.dart';
 
 /// フィードの一覧を表示する画面
@@ -12,22 +13,31 @@ class FeedListPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final feedProvider = Provider.of<FeedProvider>(context);
+    final themeProvider = Provider.of<ThemeProvider>(context);
 
     return Scaffold(
       appBar: AppBar(
         title: const Text('フィード一覧'),
         actions: [
-          Row(
-            children: [
-              const Text('画像表示'),
-              Switch(
-                value: feedProvider.showImages,
-                onChanged: (value) {
-                  feedProvider.showImages = value;
-                },
-              ),
-            ],
+          // 画像表示切り替え
+          const Icon(Icons.image),
+          Switch(
+            value: feedProvider.showImages,
+            onChanged: (value) {
+              feedProvider.showImages = value;
+            },
           ),
+          const SizedBox(width: 16), // スイッチ間のスペース
+
+          // ダークモード切り替え
+          const Icon(Icons.dark_mode),
+          Switch(
+            value: themeProvider.themeMode == ThemeMode.dark,
+            onChanged: (value) {
+              themeProvider.toggleTheme(value);
+            },
+          ),
+          const SizedBox(width: 8),
         ],
       ),
       body: feedProvider.isLoading

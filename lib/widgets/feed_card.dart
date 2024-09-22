@@ -37,6 +37,10 @@ class FeedCard extends StatelessWidget {
     // 画像の高さを決定
     final double imageHeight = showImages ? 200.0 : 0.0;
 
+    // 現在のテーマに基づいてテキストカラーを設定
+    final textColor =
+        Theme.of(context).textTheme.bodyLarge?.color ?? Colors.black;
+
     return GestureDetector(
       onTap: () => _openLink(context),
       child: Card(
@@ -91,9 +95,10 @@ class FeedCard extends StatelessWidget {
                 children: [
                   Text(
                     item.title ?? 'タイトルなし',
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontWeight: FontWeight.bold,
                       fontSize: 18,
+                      color: textColor,
                     ),
                   ),
                   const SizedBox(height: 8),
@@ -101,6 +106,7 @@ class FeedCard extends StatelessWidget {
                     item.description ?? '',
                     maxLines: 3,
                     overflow: TextOverflow.ellipsis,
+                    style: TextStyle(color: textColor),
                   ),
                   const SizedBox(height: 8),
                   Text(
