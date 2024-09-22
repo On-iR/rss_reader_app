@@ -14,6 +14,7 @@ dependencies:
   webfeed_plus: any
   intl: any
   url_launcher: any
+  cached_network_image: any
 
 dev_dependencies:
   flutter_test:

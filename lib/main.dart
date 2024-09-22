@@ -3,6 +3,7 @@ import 'package:intl/intl.dart';
 import 'package:http/http.dart' as http;
 import 'package:webfeed_plus/webfeed_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 
 void main() {
   runApp(MyApp());
@@ -83,58 +84,72 @@ class _FeedListPageState extends State<FeedListPage> {
         // 画像URLの取得
         String? imageUrl;
 
-        // 'enclosure'要素から画像URLを取得
         if (item.enclosure != null && item.enclosure!.url != null) {
           imageUrl = item.enclosure!.url;
-        }
-        // 'media:content'から画像URLを取得（補足的）
-        else if (item.media?.contents != null &&
+        } else if (item.media?.contents != null &&
             item.media!.contents!.isNotEmpty) {
           imageUrl = item.media!.contents!.first.url;
         }
 
-        return Card(
-          margin: EdgeInsets.symmetric(vertical: 8, horizontal: 16),
-          child: ListTile(
-            leading: imageUrl != null
-                ? Image.network(
-                    imageUrl,
-                    width: 60,
-                    fit: BoxFit.cover,
-                  )
-                : null,
-            title: Text(
-              item.title ?? 'タイトルなし',
-              style: TextStyle(fontWeight: FontWeight.bold),
-            ),
-            subtitle: Column(
+        return GestureDetector(
+          onTap: () async {
+            final url = item.link;
+            if (url != null && await canLaunch(url)) {
+              await launch(url);
+            } else {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text('リンクを開けませんでした')),
+              );
+            }
+          },
+          child: Card(
+            margin: EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+            child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                SizedBox(height: 4),
-                Text(
-                  item.description
-                          ?.replaceAll(RegExp(r'<[^>]*>|&[^;]+;'), '') ??
-                      '',
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                SizedBox(height: 4),
-                Text(
-                  formattedDate,
-                  style: TextStyle(color: Colors.grey[600], fontSize: 12),
+                // 画像部分
+                if (imageUrl != null)
+                  Container(
+                    height: 200, // 高さを調整してください
+                    width: double.infinity,
+                    child: CachedNetworkImage(
+                      imageUrl: imageUrl,
+                      fit: BoxFit.cover,
+                      placeholder: (context, url) =>
+                          Center(child: CircularProgressIndicator()),
+                      errorWidget: (context, url, error) => Icon(Icons.error),
+                    ),
+                  ),
+                Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        item.title ?? 'タイトルなし',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 18,
+                        ),
+                      ),
+                      SizedBox(height: 8),
+                      Text(
+                        item.description
+                                ?.replaceAll(RegExp(r'<[^>]*>|&[^;]+;'), '') ??
+                            '',
+                        maxLines: 3,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      SizedBox(height: 8),
+                      Text(
+                        formattedDate,
+                        style: TextStyle(color: Colors.grey[600], fontSize: 12),
+                      ),
+                    ],
+                  ),
                 ),
               ],
             ),
-            onTap: () async {
-              final url = item.link;
-              if (url != null && await canLaunch(url)) {
-                await launch(url);
-              } else {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text('リンクを開けませんでした')),
-                );
-              }
-            },
           ),
         );
       },
