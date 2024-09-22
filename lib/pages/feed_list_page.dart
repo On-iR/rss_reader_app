@@ -20,7 +20,10 @@ class FeedListPage extends StatelessWidget {
         title: const Text('フィード一覧'),
         actions: [
           // 画像表示切り替え
-          const Icon(Icons.image),
+          const Padding(
+            padding: EdgeInsets.symmetric(horizontal: 8.0),
+            child: Icon(Icons.image),
+          ),
           Switch(
             value: feedProvider.showImages,
             onChanged: (value) {
@@ -30,7 +33,10 @@ class FeedListPage extends StatelessWidget {
           const SizedBox(width: 16), // スイッチ間のスペース
 
           // ダークモード切り替え
-          const Icon(Icons.dark_mode),
+          const Padding(
+            padding: EdgeInsets.symmetric(horizontal: 8.0),
+            child: Icon(Icons.dark_mode),
+          ),
           Switch(
             value: themeProvider.themeMode == ThemeMode.dark,
             onChanged: (value) {

@@ -30,23 +30,42 @@ class MyApp extends StatelessWidget {
           return MaterialApp(
             title: 'フィードリーダー',
             theme: ThemeData(
-              primarySwatch: Colors.blue,
+              primarySwatch: Colors.lime, // 基本テーマをライムグリーンに設定
               brightness: Brightness.light,
               appBarTheme: const AppBarTheme(
-                backgroundColor: Colors.blue,
+                backgroundColor: Colors.lime,
                 foregroundColor: Colors.white,
               ),
               scaffoldBackgroundColor: Colors.white,
               cardColor: Colors.white,
+              elevatedButtonTheme: ElevatedButtonThemeData(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.lime, // ボタンの色をライムグリーンに設定
+                ),
+              ),
               textTheme: const TextTheme(
                 bodyLarge: TextStyle(color: Colors.black),
                 bodyMedium: TextStyle(color: Colors.black87),
                 labelSmall: TextStyle(color: Colors.grey),
                 labelLarge: TextStyle(color: Colors.white),
               ),
+              switchTheme: SwitchThemeData(
+                thumbColor: MaterialStateProperty.resolveWith<Color>((states) {
+                  if (states.contains(MaterialState.selected)) {
+                    return Colors.white; // 選択時のサムの色（ライトテーマ）
+                  }
+                  return Colors.grey; // 非選択時のサムの色
+                }),
+                trackColor: MaterialStateProperty.resolveWith<Color>((states) {
+                  if (states.contains(MaterialState.selected)) {
+                    return Colors.lime[700]!; // 選択時のトラックの色を濃いライムグリーンに設定
+                  }
+                  return Colors.grey.shade400; // 非選択時のトラックの色
+                }),
+              ),
             ),
             darkTheme: ThemeData(
-              primarySwatch: Colors.blue,
+              primarySwatch: Colors.lime, // ダークテーマでもライムグリーンを使用
               brightness: Brightness.dark,
               appBarTheme: const AppBarTheme(
                 backgroundColor: Colors.black,
@@ -54,11 +73,30 @@ class MyApp extends StatelessWidget {
               ),
               scaffoldBackgroundColor: Colors.grey[900],
               cardColor: Colors.grey[800],
+              elevatedButtonTheme: ElevatedButtonThemeData(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.lime, // ボタンの色をライムグリーンに設定
+                ),
+              ),
               textTheme: const TextTheme(
                 bodyLarge: TextStyle(color: Colors.white),
                 bodyMedium: TextStyle(color: Colors.white70),
                 labelSmall: TextStyle(color: Colors.grey),
                 labelLarge: TextStyle(color: Colors.black),
+              ),
+              switchTheme: SwitchThemeData(
+                thumbColor: MaterialStateProperty.resolveWith<Color>((states) {
+                  if (states.contains(MaterialState.selected)) {
+                    return Colors.black; // 選択時のサムの色（ダークテーマ）
+                  }
+                  return Colors.grey; // 非選択時のサムの色
+                }),
+                trackColor: MaterialStateProperty.resolveWith<Color>((states) {
+                  if (states.contains(MaterialState.selected)) {
+                    return Colors.limeAccent; // 選択時のトラックの色をライムアクセントに設定
+                  }
+                  return Colors.grey.shade600; // 非選択時のトラックの色
+                }),
               ),
             ),
             themeMode: themeProvider.themeMode, // 現在のテーマモードを設定
