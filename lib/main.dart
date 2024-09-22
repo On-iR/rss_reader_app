@@ -12,7 +12,7 @@ void main() {
 
 class MyApp extends StatelessWidget {
   // 特定のフィードURLを指定してください（RSSまたはAtom）
-  final String feedUrl = 'https://realtime.jser.info/feed.xml';
+  final String feedUrl = 'https://zenn.dev/feed';
 
   @override
   Widget build(BuildContext context) {
@@ -38,6 +38,7 @@ class FeedListPage extends StatefulWidget {
 class _FeedListPageState extends State<FeedListPage> {
   List<_FeedItem> _items = [];
   bool _isLoading = true;
+  bool _showSmallImages = true; // 画像表示モードを管理する変数
 
   @override
   void initState() {
@@ -106,6 +107,37 @@ class _FeedListPageState extends State<FeedListPage> {
     return utf8;
   }
 
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('フィードリーダー'),
+        actions: [
+          // スイッチをアプリバーに追加
+          Row(
+            children: [
+              Text('画像表示'),
+              Switch(
+                value: _showSmallImages,
+                onChanged: (value) {
+                  setState(() {
+                    _showSmallImages = value;
+                  });
+                },
+              ),
+            ],
+          ),
+        ],
+      ),
+      body: _isLoading
+          ? Center(child: CircularProgressIndicator())
+          : RefreshIndicator(
+              onRefresh: _loadFeed,
+              child: _buildFeedList(),
+            ),
+    );
+  }
+
   Widget _buildFeedList() {
     if (_items.isEmpty) {
       return Center(child: Text('フィードの読み込みに失敗しました'));
@@ -136,38 +168,28 @@ class _FeedListPageState extends State<FeedListPage> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 // 画像部分
-                if (item.imageUrl != null)
+                if (_showSmallImages)
                   ClipRRect(
                     borderRadius: BorderRadius.vertical(
                       top: Radius.circular(16), // カードの上部と同じ角丸を適用
                     ),
                     child: Container(
-                      height: 200,
                       width: double.infinity,
-                      child: CachedNetworkImage(
-                        imageUrl: item.imageUrl!,
-                        fit: BoxFit.cover,
-                        placeholder: (context, url) =>
-                            Center(child: CircularProgressIndicator()),
-                        errorWidget: (context, url, error) => Image.asset(
-                          'assets/default_image.png',
-                          fit: BoxFit.cover,
-                        ),
-                      ),
-                    ),
-                  )
-                else
-                  ClipRRect(
-                    borderRadius: BorderRadius.vertical(
-                      top: Radius.circular(16),
-                    ),
-                    child: Container(
-                      height: 200,
-                      width: double.infinity,
-                      child: Image.asset(
-                        'assets/default_image.png',
-                        fit: BoxFit.cover,
-                      ),
+                      child: item.imageUrl != null
+                          ? CachedNetworkImage(
+                              imageUrl: item.imageUrl!,
+                              fit: BoxFit.cover,
+                              placeholder: (context, url) =>
+                                  Center(child: CircularProgressIndicator()),
+                              errorWidget: (context, url, error) => Image.asset(
+                                'assets/default_image.png',
+                                fit: BoxFit.cover,
+                              ),
+                            )
+                          : Image.asset(
+                              'assets/default_image.png',
+                              fit: BoxFit.cover,
+                            ),
                     ),
                   ),
                 Padding(
@@ -202,20 +224,6 @@ class _FeedListPageState extends State<FeedListPage> {
         );
       },
     );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-        appBar: AppBar(
-          title: Text('フィードリーダー'),
-        ),
-        body: _isLoading
-            ? Center(child: CircularProgressIndicator())
-            : RefreshIndicator(
-                onRefresh: _loadFeed,
-                child: _buildFeedList(),
-              ));
   }
 }
 
