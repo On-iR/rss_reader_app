@@ -14,6 +14,7 @@ dependencies:
   intl: any
   url_launcher: any
   cached_network_image: any
+  provider: any
 
 flutter:
   uses-material-design: true
