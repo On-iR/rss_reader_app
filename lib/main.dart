@@ -10,6 +10,7 @@ void main() {
   runApp(const MyApp());
 }
 
+/// アプリケーションのルートウィジェット
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
@@ -25,6 +26,7 @@ class MyApp extends StatelessWidget {
   }
 }
 
+/// フィードURLを入力する画面
 class FeedUrlInputPage extends StatefulWidget {
   const FeedUrlInputPage({super.key});
 
@@ -44,6 +46,7 @@ class _FeedUrlInputPageState extends State<FeedUrlInputPage> {
     super.dispose();
   }
 
+  /// フィードURLを送信し、フィードを読み込む
   Future<void> _submitUrl() async {
     if (!_formKey.currentState!.validate()) {
       return;
@@ -56,8 +59,9 @@ class _FeedUrlInputPageState extends State<FeedUrlInputPage> {
       _errorMessage = null;
     });
 
-    // 簡単なURLの検証
-    if (!Uri.tryParse(feedUrl)!.hasAbsolutePath ?? true) {
+    // URLの検証
+    final uri = Uri.tryParse(feedUrl);
+    if (uri == null || !uri.hasAbsolutePath) {
       setState(() {
         _isLoading = false;
         _errorMessage = '有効なURLを入力してください。';
@@ -66,21 +70,20 @@ class _FeedUrlInputPageState extends State<FeedUrlInputPage> {
     }
 
     try {
-      final response = await http.get(Uri.parse(feedUrl));
+      final response = await http.get(uri);
 
       if (response.statusCode == 200) {
         // エンコーディングの検出とデコード
         final encoding = _detectEncoding(response.headers, response.bodyBytes);
         final content = encoding.decode(response.bodyBytes);
 
-        var feed;
         try {
           // RSSフィードとして解析を試みる
-          feed = RssFeed.parse(content);
+          RssFeed.parse(content);
         } catch (_) {
           try {
             // RSSでない場合、Atomフィードとして解析を試みる
-            feed = AtomFeed.parse(content);
+            AtomFeed.parse(content);
           } catch (e) {
             throw Exception('RSSまたはAtom形式のフィードではありません。');
           }
@@ -112,7 +115,7 @@ class _FeedUrlInputPageState extends State<FeedUrlInputPage> {
     }
   }
 
-  // エンコーディングの検出
+  /// HTTPレスポンスヘッダーからエンコーディングを検出
   Encoding _detectEncoding(Map<String, String> headers, List<int> bodyBytes) {
     final contentType = headers['content-type'];
     if (contentType != null) {
@@ -157,8 +160,8 @@ class _FeedUrlInputPageState extends State<FeedUrlInputPage> {
                         if (value == null || value.trim().isEmpty) {
                           return 'フィードURLを入力してください。';
                         }
-                        if (!Uri.tryParse(value.trim())!.hasAbsolutePath ??
-                            true) {
+                        final uri = Uri.tryParse(value.trim());
+                        if (uri == null || !uri.hasAbsolutePath) {
                           return '有効なURLを入力してください。';
                         }
                         return null;
@@ -184,6 +187,7 @@ class _FeedUrlInputPageState extends State<FeedUrlInputPage> {
   }
 }
 
+/// フィードの一覧を表示する画面
 class FeedListPage extends StatefulWidget {
   final String feedUrl;
 
@@ -204,42 +208,40 @@ class _FeedListPageState extends State<FeedListPage> {
     _loadFeed();
   }
 
+  /// フィードを読み込み、フィードアイテムをリストに追加
   Future<void> _loadFeed() async {
     try {
-      final response = await http.get(Uri.parse(widget.feedUrl));
+      final uri = Uri.tryParse(widget.feedUrl);
+      if (uri == null) {
+        throw Exception('無効なフィードURLです。');
+      }
+
+      final response = await http.get(uri);
 
       if (response.statusCode == 200) {
         // エンコーディングの検出とデコード
         final encoding = _detectEncoding(response.headers, response.bodyBytes);
         final content = encoding.decode(response.bodyBytes);
 
-        var feed;
         try {
           // RSSフィードとして解析を試みる
-          feed = RssFeed.parse(content);
+          final feed = RssFeed.parse(content);
+          _items.addAll(feed.items!
+              .map((item) => FeedItem.fromRssItem(item))
+              .toList(growable: false));
         } catch (_) {
           try {
             // RSSでない場合、Atomフィードとして解析を試みる
-            feed = AtomFeed.parse(content);
+            final feed = AtomFeed.parse(content);
+            _items.addAll(feed.items!
+                .map((item) => FeedItem.fromAtomItem(item))
+                .toList(growable: false));
           } catch (e) {
             throw Exception('RSSまたはAtom形式のフィードではありません。');
           }
         }
 
-        List<FeedItem> items = [];
-        if (feed is RssFeed) {
-          items = feed.items!
-              .map((item) => FeedItem.fromRssItem(item))
-              .toList(growable: false);
-        } else if (feed is AtomFeed) {
-          items = feed.items!
-              .map((item) => FeedItem.fromAtomItem(item))
-              .toList(growable: false);
-        }
-
         setState(() {
-          _items.clear();
-          _items.addAll(items);
           _isLoading = false;
         });
       } else {
@@ -257,7 +259,7 @@ class _FeedListPageState extends State<FeedListPage> {
     }
   }
 
-  // エンコーディングの検出
+  /// HTTPレスポンスヘッダーからエンコーディングを検出
   Encoding _detectEncoding(Map<String, String> headers, List<int> bodyBytes) {
     final contentType = headers['content-type'];
     if (contentType != null) {
@@ -318,6 +320,7 @@ class _FeedListPageState extends State<FeedListPage> {
   }
 }
 
+/// フィードアイテムのデータモデル
 class FeedItem {
   final String? title;
   final String? link;
@@ -333,9 +336,9 @@ class FeedItem {
     this.imageUrl,
   });
 
-  // RSSアイテムからFeedItemを作成
+  /// RSSフィードアイテムからFeedItemを作成
   factory FeedItem.fromRssItem(RssItem item) {
-    // 日付のフォーマット
+    // 日付の取得
     DateTime? pubDate = item.pubDate;
 
     // 画像URLの取得
@@ -359,9 +362,9 @@ class FeedItem {
     );
   }
 
-  // AtomアイテムからFeedItemを作成
+  /// AtomフィードアイテムからFeedItemを作成
   factory FeedItem.fromAtomItem(AtomItem item) {
-    // 日付のフォーマット
+    // 日付の取得とパース
     DateTime? pubDate;
     if (item.updated != null) {
       pubDate = item.updated;
@@ -395,6 +398,7 @@ class FeedItem {
   }
 }
 
+/// フィードアイテムを表示するカードウィジェット
 class FeedCard extends StatelessWidget {
   final FeedItem item;
   final bool showImages;
@@ -440,7 +444,7 @@ class FeedCard extends StatelessWidget {
                   child: item.imageUrl != null && item.imageUrl!.isNotEmpty
                       ? CachedNetworkImage(
                           imageUrl: item.imageUrl!,
-                          fit: BoxFit.cover, // BoxFit.cover を使用
+                          fit: BoxFit.cover, // 画像がコンテナ全体を覆うように設定
                           placeholder: (context, url) => const Center(
                             child: CircularProgressIndicator(),
                           ),
