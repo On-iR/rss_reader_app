@@ -50,7 +50,7 @@ class MyApp extends StatelessWidget {
                 foregroundColor: Colors.white,
               ),
               scaffoldBackgroundColor: Colors.white,
-              cardColor: Colors.white,
+              cardTheme: CardTheme(color: Colors.grey[50]),
               elevatedButtonTheme: ElevatedButtonThemeData(
                   style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.lime, // ボタンの色をライムグリーンに設定
@@ -93,7 +93,7 @@ class MyApp extends StatelessWidget {
                 foregroundColor: Colors.white,
               ),
               scaffoldBackgroundColor: Colors.grey[900],
-              cardColor: Colors.grey[800],
+              cardTheme: CardTheme(color: Colors.grey[800]),
               elevatedButtonTheme: ElevatedButtonThemeData(
                 style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.lime, // ボタンの色をライムグリーンに設定
