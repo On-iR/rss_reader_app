@@ -13,9 +13,6 @@ void main() {
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
-  // 特定のフィードURLを指定してください（RSSまたはAtom）
-  final String feedUrl = 'https://zenn.dev/feed';
-
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -23,7 +20,166 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: FeedListPage(feedUrl: feedUrl),
+      home: const FeedUrlInputPage(),
+    );
+  }
+}
+
+class FeedUrlInputPage extends StatefulWidget {
+  const FeedUrlInputPage({super.key});
+
+  @override
+  State<FeedUrlInputPage> createState() => _FeedUrlInputPageState();
+}
+
+class _FeedUrlInputPageState extends State<FeedUrlInputPage> {
+  final TextEditingController _controller = TextEditingController();
+  final _formKey = GlobalKey<FormState>();
+  bool _isLoading = false;
+  String? _errorMessage;
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  Future<void> _submitUrl() async {
+    if (!_formKey.currentState!.validate()) {
+      return;
+    }
+
+    final String feedUrl = _controller.text.trim();
+
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
+
+    // 簡単なURLの検証
+    if (!Uri.tryParse(feedUrl)!.hasAbsolutePath ?? true) {
+      setState(() {
+        _isLoading = false;
+        _errorMessage = '有効なURLを入力してください。';
+      });
+      return;
+    }
+
+    try {
+      final response = await http.get(Uri.parse(feedUrl));
+
+      if (response.statusCode == 200) {
+        // エンコーディングの検出とデコード
+        final encoding = _detectEncoding(response.headers, response.bodyBytes);
+        final content = encoding.decode(response.bodyBytes);
+
+        var feed;
+        try {
+          // RSSフィードとして解析を試みる
+          feed = RssFeed.parse(content);
+        } catch (_) {
+          try {
+            // RSSでない場合、Atomフィードとして解析を試みる
+            feed = AtomFeed.parse(content);
+          } catch (e) {
+            throw Exception('RSSまたはAtom形式のフィードではありません。');
+          }
+        }
+
+        // フィードの解析が成功したら _isLoading を false に設定
+        setState(() {
+          _isLoading = false;
+        });
+
+        // フィードリストページへ遷移
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => FeedListPage(feedUrl: feedUrl),
+          ),
+        );
+      } else {
+        setState(() {
+          _isLoading = false;
+          _errorMessage = 'フィードの読み込みに失敗しました。ステータスコード: ${response.statusCode}';
+        });
+      }
+    } catch (e) {
+      setState(() {
+        _isLoading = false;
+        _errorMessage = 'フィードの読み込み中にエラーが発生しました: $e';
+      });
+    }
+  }
+
+  // エンコーディングの検出
+  Encoding _detectEncoding(Map<String, String> headers, List<int> bodyBytes) {
+    final contentType = headers['content-type'];
+    if (contentType != null) {
+      final charsetMatch = RegExp(r'charset=([\w-]+)').firstMatch(contentType);
+      if (charsetMatch != null) {
+        final charset = charsetMatch.group(1);
+        if (charset != null) {
+          final encoding = Encoding.getByName(charset);
+          if (encoding != null) {
+            return encoding;
+          }
+        }
+      }
+    }
+    // デフォルトはUTF-8
+    return utf8;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('フィードURLを入力'),
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: _isLoading
+            ? const Center(child: CircularProgressIndicator())
+            : Form(
+                key: _formKey,
+                child: Column(
+                  children: [
+                    TextFormField(
+                      controller: _controller,
+                      decoration: const InputDecoration(
+                        labelText: 'フィードURL',
+                        hintText: 'https://example.com/feed',
+                        border: OutlineInputBorder(),
+                      ),
+                      keyboardType: TextInputType.url,
+                      validator: (value) {
+                        if (value == null || value.trim().isEmpty) {
+                          return 'フィードURLを入力してください。';
+                        }
+                        if (!Uri.tryParse(value.trim())!.hasAbsolutePath ??
+                            true) {
+                          return '有効なURLを入力してください。';
+                        }
+                        return null;
+                      },
+                    ),
+                    const SizedBox(height: 16),
+                    ElevatedButton(
+                      onPressed: _submitUrl,
+                      child: const Text('フィードを読み込む'),
+                    ),
+                    if (_errorMessage != null) ...[
+                      const SizedBox(height: 16),
+                      Text(
+                        _errorMessage!,
+                        style: const TextStyle(color: Colors.red),
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+      ),
     );
   }
 }
@@ -62,8 +218,12 @@ class _FeedListPageState extends State<FeedListPage> {
           // RSSフィードとして解析を試みる
           feed = RssFeed.parse(content);
         } catch (_) {
-          // RSSでない場合、Atomフィードとして解析を試みる
-          feed = AtomFeed.parse(content);
+          try {
+            // RSSでない場合、Atomフィードとして解析を試みる
+            feed = AtomFeed.parse(content);
+          } catch (e) {
+            throw Exception('RSSまたはAtom形式のフィードではありません。');
+          }
         }
 
         List<FeedItem> items = [];
@@ -83,7 +243,7 @@ class _FeedListPageState extends State<FeedListPage> {
           _isLoading = false;
         });
       } else {
-        throw Exception('フィードの読み込みに失敗しました');
+        throw Exception('フィードの読み込みに失敗しました。ステータスコード: ${response.statusCode}');
       }
     } catch (e) {
       debugPrint('フィードの読み込み中にエラーが発生しました: $e');
@@ -91,6 +251,9 @@ class _FeedListPageState extends State<FeedListPage> {
         _isLoading = false;
         _items.clear();
       });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('フィードの読み込みに失敗しました: $e')),
+      );
     }
   }
 
@@ -117,7 +280,7 @@ class _FeedListPageState extends State<FeedListPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('フィードリーダー'),
+        title: const Text('フィード一覧'),
         actions: [
           Row(
             children: [
@@ -159,7 +322,7 @@ class FeedItem {
   final String? title;
   final String? link;
   final String? description;
-  final DateTime? pubDate; // DateTime 型に変更
+  final DateTime? pubDate; // DateTime 型
   final String? imageUrl;
 
   FeedItem({
@@ -277,8 +440,7 @@ class FeedCard extends StatelessWidget {
                   child: item.imageUrl != null && item.imageUrl!.isNotEmpty
                       ? CachedNetworkImage(
                           imageUrl: item.imageUrl!,
-                          fit: BoxFit
-                              .cover, // BoxFit.contain から BoxFit.cover に変更
+                          fit: BoxFit.cover, // BoxFit.cover を使用
                           placeholder: (context, url) => const Center(
                             child: CircularProgressIndicator(),
                           ),
